@@ -1,4 +1,4 @@
-# gemini_stat_lambda
+# gemini_stats_lambda
 Gemini Stats Lambda
 
 ## Description
