@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import smtplib
 import time
 import traceback
@@ -165,8 +166,8 @@ def send_email(sender, app_password, recipient, subject, email_body):
 
 def lambda_handler(event, context):
     # AWS Config
-    secret_name = "gmail_app_key"
-    region_name = "us-east-1"
+    secret_name = os.environ["SECRET_NAME"]
+    region_name = os.environ["REGION_NAME"]
     app_password = get_secret(secret_name, region_name)["gmail_app_password"]
 
     # Gemini API Account Config
@@ -175,8 +176,9 @@ def lambda_handler(event, context):
     domain = "https://api.gemini.com"
 
     # Email Config
-    sender = "rick.ramgattie@gmail.com"
-    recipient = "rick.ramgattie@gmail.com"
+    sender = os.environ["SENDER_GMAIL_ADDRESS"]
+    recipient = os.environ["RECIPIENT_GMAIL_ADDRESS"]
+
     subject = (
         f"Gemini Trading Account Stats - {datetime.datetime.now().strftime('%Y-%m-%d')}"
     )
