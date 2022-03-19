@@ -67,9 +67,9 @@ def public_api_call(domain, path):
 
 
 # API Endpoints
-def get_all_trades(domain, gemini_api_key, gemini_api_secret):
+def get_all_trades(domain, gemini_api_key, gemini_api_secret, gemini_account):
     path = "/v1/mytrades"
-    return private_api_call(domain, gemini_api_key, gemini_api_secret, path, additional_params={"limit_trades": 500})
+    return private_api_call(domain, gemini_api_key, gemini_api_secret, path, additional_params={"limit_trades": 500, "account":gemini_account})
 
 def get_current_asset_prices(domain):
     path = "/v1/pricefeed"
@@ -83,10 +83,10 @@ def convert_price_list_to_dict(price_list):
         price_dict[symbol] = float(symbol_group.get("price"))
     return price_dict
 
-def get_crypto_holding_summary(domain, gemini_api_key, gemini_api_secret):
+def get_crypto_holding_summary(domain, gemini_api_key, gemini_api_secret, gemini_account):
     price_dict = convert_price_list_to_dict(get_current_asset_prices(domain))
     buy_order_tokens = {}
-    for order in get_all_trades(domain, gemini_api_key, gemini_api_secret):
+    for order in get_all_trades(domain, gemini_api_key, gemini_api_secret, gemini_account):
         if (order.get("type") == "Buy"):
             symbol = (order.get("symbol")).upper()
             if(not ("GUSD" in symbol)): # Skip GUSD
@@ -160,11 +160,12 @@ def lambda_handler(event, context):
     # Gemini API Account Config
     gemini_api_key = get_secret(secret_name, region_name)['gemini_api_key']
     gemini_api_secret = get_secret(secret_name, region_name)['gemini_api_secret'].encode()
+    gemini_account = "Primary"
     domain = "https://api.gemini.com"
 
     # Email Config
     sender = "rick.ramgattie@gmail.com"
     recipient = "rick.ramgattie@gmail.com"
     subject = f"Gemini Trading Account Stats - {datetime.datetime.now().strftime('%Y-%m-%d')}"
-    email_body = generate_html(get_crypto_holding_summary(domain, gemini_api_key, gemini_api_secret))
+    email_body = generate_html(get_crypto_holding_summary(domain, gemini_api_key, gemini_api_secret, gemini_account))
     send_email(sender, app_password, recipient, subject, email_body)
